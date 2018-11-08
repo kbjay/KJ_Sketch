@@ -62,6 +62,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
     private int[][] mVerArray;
     private int[][] mAngel45Array;
     private int[][] mAngleRevert45Array;
+    private boolean mIsStop;
 
     /**
      * 跟4个mask对应
@@ -97,6 +98,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
         mQueue.offer(array);
 
         if (mIsFirstArray) {
+            mIsStop = false;
             mIsFirstArray = false;
             mWidth = array[0].length;
             mHeight = array.length;
@@ -264,6 +266,9 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
      * @param type
      */
     private void drawPoint(Point point, int type) {
+        if (mIsStop) {
+            return;
+        }
         mDrawCountArray[point.y][point.x]++;
         int gray = 255 - (256 / mTotalCount / 2) * (mDrawCountArray[point.y][point.x] * 2 - 1);
         mPaint.setColor(Color.argb(255, gray, gray, gray));
@@ -472,6 +477,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
      * 重新绘制
      */
     public void reTry() {
+        mIsStop = false;
         mIsFirstArray = true;
         while (mQueue.poll() != null) {
         }
@@ -481,5 +487,9 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
                 mDrawCountArray[i][j] = 0;
             }
         }
+    }
+
+    public void stop() {
+        mIsStop = true;
     }
 }

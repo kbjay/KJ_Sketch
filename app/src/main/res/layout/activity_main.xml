@@ -32,6 +32,12 @@
         android:onClick="reTry"
         android:text="重绘" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="stopDraw"
+        android:text="停止" />
+
     <com.example.kb_jay.kj_sketch.SketchView
         android:id="@+id/sv_test"
         android:layout_width="match_parent"

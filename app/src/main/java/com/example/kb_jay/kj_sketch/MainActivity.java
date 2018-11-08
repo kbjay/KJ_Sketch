@@ -167,4 +167,8 @@ public class MainActivity extends AppCompatActivity {
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
     }
+
+    public void stopDraw(View view) {
+        mSumiao.stop();
+    }
 }
