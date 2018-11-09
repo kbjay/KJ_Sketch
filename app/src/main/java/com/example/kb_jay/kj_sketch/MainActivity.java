@@ -29,16 +29,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "openCV";
     private BaseLoaderCallback mLoaderCallback;
-    private SketchView mSumiao;
-    private int mCount = 8;
+
+    private int mCount = 32;
     private Subscription mSubscription;
+    private SketchView mSketchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initOpenCv();
-        mSumiao = (SketchView) this.findViewById(R.id.sv_test);
+        mSketchView = (SketchView) this.findViewById(R.id.kj_sketch);
     }
 
     public void test(View view) {
@@ -107,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(int[][] ints) {
-                        mSumiao.addArray(ints);
+                        mSketchView.addArray(ints);
                     }
 
                     @Override
@@ -126,10 +127,10 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void reTry(View view) {
-        mSumiao.reTry();
+        mSketchView.reTry();
         mSubscription.cancel();
 
-        mSumiao.postDelayed(new Runnable() {
+        mSketchView.postDelayed(new Runnable() {
             @Override
             public void run() {
                 draw();
@@ -169,6 +170,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopDraw(View view) {
-        mSumiao.stop();
+        mSketchView.stop();
     }
 }

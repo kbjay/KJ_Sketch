@@ -8,10 +8,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Shader;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -19,21 +19,12 @@ import java.util.Random;
 import java.util.Stack;
 import java.util.concurrent.LinkedBlockingDeque;
 
-/**
- * 绘图view
- *
- * @anthor kb_jay
- * create at 2018/11/8 上午10:23
- */
-public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
-
+public class SketchView extends View {
     private Paint mPaint;
-    private SurfaceHolder mHolder;
-
     /**
      * 分的层数
      */
-    private int mTotalCount = 8;
+    private int mTotalCount = 32;
     private int mCount = 0;
     /**
      * 接收分层0，1数组的队列
@@ -84,9 +75,15 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void init() {
-        mHolder = getHolder();
-        mHolder.addCallback(this);
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (mTmpBm != null) {
+            canvas.drawBitmap(mTmpBm, 0, 0, mPaint);
+        }
     }
 
     /**
@@ -116,11 +113,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
             mPaint.setColor(Color.argb(255, 255, 255, 255));
 
             mTmpCanvas.drawRect(0, 0, mWidth, mHeight, mPaint);
-            Canvas canvas = mHolder.lockCanvas();
-            if (canvas != null) {
-                canvas.drawBitmap(mTmpBm, 0, 0, mPaint);
-                mHolder.unlockCanvasAndPost(canvas);
-            }
+            postInvalidate();
             startDraw();
         }
     }
@@ -142,15 +135,16 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
                     drawArray();
                     Log.d("kb_jay", "结束绘制！！" + mCount + " " + (System.currentTimeMillis() - startTime));
 
-                    //刷新mask
-                    if (mCount == mTotalCount / 2) {
-                        Log.d("kb_jay", "开始刷新mask！！" + System.currentTimeMillis());
-                        initMasks();
-                        Log.d("kb_jay", "结束刷新mask！！" + System.currentTimeMillis());
-                    }
+//                    //刷新mask
+//                    if (mCount == mTotalCount / 2) {
+//                        Log.d("kb_jay", "开始刷新mask！！" + System.currentTimeMillis());
+//                        initMasks();
+//                        Log.d("kb_jay", "结束刷新mask！！" + System.currentTimeMillis());
+//                    }
                     mCount++;
                     if (mCount == mTotalCount) {
                         Log.d("kb_jay", "绘制结束" + (System.currentTimeMillis() - start));
+                        break;
                     }
                 }
             }
@@ -167,7 +161,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
         Point prePoint = randomPoint;
         //先画右下角
         Log.d("kb_jay", "开始绘制右下角");
-        while (randomPoint.x < mWidth && randomPoint.y < mHeight && mCurrentArray != null) {
+        while (randomPoint.x >= 0 && randomPoint.y > 0 && randomPoint.x < mWidth && randomPoint.y < mHeight && mCurrentArray != null) {
             int y = randomPoint.y;
             int x = randomPoint.x;
             for (int i = randomPoint.x - 1; i >= 0; i--) {
@@ -201,7 +195,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
         //再画左上角
         Log.d("kb_jay", "开始绘制左上角");
         randomPoint = prePoint;
-        while (randomPoint.x >= 0 && randomPoint.y > 0 && mCurrentArray != null) {
+        while (randomPoint.x >= 0 && randomPoint.y > 0 && randomPoint.x < mWidth && randomPoint.y < mHeight && mCurrentArray != null) {
             int y = randomPoint.y;
             int x = randomPoint.x;
             for (int i = randomPoint.x - 1; i >= 0; i--) {
@@ -241,6 +235,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
      */
     private void drawPoints(ArrayList<Point> points) {
         //如果区域中的点过多，一次绘制10000个
+        long start = System.currentTimeMillis();
         int mOneTimeDrawCount = 10000;
 
         //设置每次的绘制方向
@@ -259,18 +254,14 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
 //                    e.printStackTrace();
 //                }
                 //将tmpBitmap绘制到该view上
-                Canvas canvas = mHolder.lockCanvas();
-                if (canvas != null) {
-                    canvas.drawBitmap(mTmpBm, 0, 0, null);
-                    mHolder.unlockCanvasAndPost(canvas);
-                }
+                long holderStart = System.currentTimeMillis();
+                postInvalidate();
             }
         }
-        Canvas canvas = mHolder.lockCanvas();
-        if (canvas != null) {
-            canvas.drawBitmap(mTmpBm, 0, 0, null);
-            mHolder.unlockCanvasAndPost(canvas);
-        }
+
+        long holderStart = System.currentTimeMillis();
+
+        postInvalidate();
     }
 
     /**
@@ -441,18 +432,6 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
         maskBitmapRevert45 = null;
     }
 
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-    }
-
     /**
      * 获取parent所在的区域中的所有点
      * 要求所有点的绘制次数一致
@@ -464,6 +443,7 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
      */
     public ArrayList<Point> getPoints(Point parent) {
 
+        long start = System.currentTimeMillis();
         int drawTime = mDrawCountArray[parent.y][parent.x];
 
         ArrayList<Point> mData = new ArrayList<>();
@@ -475,8 +455,8 @@ public class SketchView extends SurfaceView implements SurfaceHolder.Callback {
             mData.add(item);
             for (int i = item.x - 1; i <= item.x + 1; i++) {
                 for (int j = item.y - 1; j <= item.y + 1; j++) {
-                    if (i >= 0 && i < mWidth && j >= 0 && j < mHeight) {
-                        if (mCurrentArray[j][i] == 1 && Math.abs(mDrawCountArray[j][i] - drawTime)<2) {
+                    if (i >= 0 && i < mWidth && j >= 0 && j < mHeight && drawTime == mDrawCountArray[j][i]) {
+                        if (mCurrentArray[j][i] == 1) {
                             stack.push(new Point(i, j));
                             mCurrentArray[j][i] = 0;
                         }

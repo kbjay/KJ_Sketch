@@ -38,8 +38,12 @@
         android:onClick="stopDraw"
         android:text="停止" />
 
+    <!--<com.example.kb_jay.kj_sketch.SketchView-->
+        <!--android:id="@+id/sv_test"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content" />-->
     <com.example.kb_jay.kj_sketch.SketchView
-        android:id="@+id/sv_test"
+        android:id="@+id/kj_sketch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
