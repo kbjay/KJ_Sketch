@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "openCV";
     private BaseLoaderCallback mLoaderCallback;
 
-    private int mCount = 32;
+    private int mCount = 16;
     private Subscription mSubscription;
     private SketchView mSketchView;
 

@@ -24,7 +24,7 @@ public class SketchView extends View {
     /**
      * 分的层数
      */
-    private int mTotalCount = 32;
+    private int mTotalCount = 16;
     private int mCount = 0;
     /**
      * 接收分层0，1数组的队列
